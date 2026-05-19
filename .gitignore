@@ -1,6 +1,29 @@
+# ESP-IDF / firmware
 build/
 managed_components/
 .claude/
 *.bin
 *.elf
 *.map
+
+# Android
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+bin/
+gen/
+out/
+.gradle/
+local.properties
+*.iml
+.idea/
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+*.jks
+*.keystore
+google-services.json
+*.hprof
