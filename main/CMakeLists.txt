@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "bt_serial.c"
+        "pwm.c"
+        "schema.c"
+        "telemetry.c"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        nvs_flash
+        bt
+        esp_driver_ledc
+        esp_driver_gptimer
+        esp_driver_gpio
+        esp_timer
+        freertos
+        esp_hw_support
+        soc
+)
