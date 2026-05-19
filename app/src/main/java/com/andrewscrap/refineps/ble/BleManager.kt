@@ -46,6 +46,8 @@ class BleManager(private val context: Context) {
     private var gatt: BluetoothGatt? = null
     private val operationQueue = ConcurrentLinkedQueue<BleOperation>()
     private var isOperationInProgress = false
+    private var negotiatedMtu = 23  // BLE default; updated on MTU negotiation
+    private val receiveBuffer = StringBuilder()
 
     private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
     val connectionState: StateFlow<ConnectionState> = _connectionState
@@ -110,7 +112,8 @@ class BleManager(private val context: Context) {
 
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                emitLog("MTU changed to $mtu")
+                negotiatedMtu = mtu
+                emitLog("MTU changed to $mtu (payload ${mtu - 3} bytes)")
             } else {
                 emitLog("MTU change failed: $status")
             }
@@ -153,8 +156,14 @@ class BleManager(private val context: Context) {
     }
 
     private fun handleNotification(data: ByteArray) {
-        val json = String(data, Charsets.UTF_8)
-        _events.tryEmit(BleEvent.Telemetry(json))
+        receiveBuffer.append(String(data, Charsets.UTF_8))
+        var newlineIdx = receiveBuffer.indexOf('\n')
+        while (newlineIdx >= 0) {
+            val json = receiveBuffer.substring(0, newlineIdx).trim()
+            receiveBuffer.delete(0, newlineIdx + 1)
+            if (json.isNotEmpty()) _events.tryEmit(BleEvent.Telemetry(json))
+            newlineIdx = receiveBuffer.indexOf('\n')
+        }
     }
 
     fun startScan() {
@@ -190,7 +199,10 @@ class BleManager(private val context: Context) {
 
     fun sendCommand(json: String) {
         val data = (json + "\n").toByteArray(Charsets.UTF_8)
-        enqueueOperation(BleOperation.WriteCharacteristic(SERVICE_UUID, WRITE_CHAR_UUID, data))
+        val chunkSize = negotiatedMtu - 3
+        data.toList().chunked(chunkSize).forEach { chunk ->
+            enqueueOperation(BleOperation.WriteCharacteristic(SERVICE_UUID, WRITE_CHAR_UUID, chunk.toByteArray()))
+        }
     }
 
     private fun enqueueOperation(operation: BleOperation) {
@@ -290,6 +302,8 @@ class BleManager(private val context: Context) {
         isOperationInProgress = false
         gatt?.close()
         gatt = null
+        negotiatedMtu = 23
+        receiveBuffer.clear()
         _connectionState.value = ConnectionState.DISCONNECTED
         _deviceName.value = null
     }
