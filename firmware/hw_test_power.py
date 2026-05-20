@@ -1,8 +1,42 @@
 #!/usr/bin/env python3
 """
-RefinePS real-hardware power test — CH1, 12V battery, 135-ohm dummy load.
-Steps through duty cycles and pauses at each for manual meter reading.
-Ctrl-C at any pause sends alloff before exiting.
+hw_test_power.py — RefinePS real-hardware power test
+
+Steps through duty cycles on CH1 with a real load attached, pausing at
+each step for a manual meter reading. Interactive — you press Enter to
+advance. Ctrl-C at any pause safely sends alloff before exiting.
+
+Use this AFTER hw_test.py confirms BLE and PWM are working without a load.
+
+Usage:
+  pip install bleak                  # one-time install
+  python3 hw_test_power.py
+
+Hardware setup:
+  - 12V supply or battery on the ESP32 power rail
+  - 135-ohm dummy load resistor across CH1 output (GPIO 25)
+  - DMM in DC-V mode across the load
+  - ESP32 flashed and advertising BLE as RefinePS
+
+Test sequence (CH1 only, GPIO 25):
+  alloff first — confirm 0V before starting
+  10%  steady  →  ~1.2V  /  ~9mA
+  25%  steady  →  ~3.0V  / ~22mA
+  50%  steady  →  ~6.0V  / ~44mA
+  75%  steady  →  ~9.0V  / ~67mA
+  100% steady  → ~12.0V  / ~89mA  (1.1W in resistor)
+  Dual-pulse 80/20 @ 1kHz — scope needed to see switching
+  50%  again   →  ~6.0V  — repeatability check
+  alloff on exit
+
+All readings are for a 12V supply with 135-ohm load.
+Adjust expected voltages proportionally for different supply voltages.
+
+Related:
+  firmware/hw_test.py            — BLE-only test, no load required, run this first
+  firmware/notes/hardware.md     — GPIO map and hardware verification checklist
+  firmware/CLAUDE.md             — BLE UUIDs and build/flash reference
+  firmware/refine_schema_v1.1.md — full command/response protocol
 """
 import asyncio, json
 from bleak import BleakScanner, BleakClient
