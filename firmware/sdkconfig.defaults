@@ -1,4 +1,24 @@
-# BLE only — release Classic BT memory
+# sdkconfig.defaults — ESP-IDF build configuration defaults
+#
+# ESP-IDF applies these values as the base before generating sdkconfig.
+# sdkconfig is the live generated file (also committed) — edit this file
+# to make permanent config changes, then fullclean and rebuild:
+#
+#   bash -c "source ~/esp-idf-v5.5/export.sh && idf.py fullclean && idf.py build"
+#
+# WARNING: always fullclean after any change here — dirty rebuilds after
+# sdkconfig changes caused a boot-loop regression (see firmware/CLAUDE.md).
+#
+# Related:
+#   firmware/CLAUDE.md          — build rules, known bugs, flash commands
+#   firmware/notes/setup.md     — first-time build environment setup
+
+# ── Bluetooth ────────────────────────────────────────────────────────────────
+# BLE only. Classic BT is compiled out entirely.
+# CRITICAL: do not re-enable CONFIG_BT_CLASSIC_ENABLED or remove
+# CONFIG_BTDM_CTRL_MODE_BLE_ONLY without reading CLAUDE.md bug #1 first —
+# calling esp_bt_controller_mem_release for a disabled mode causes an
+# immediate abort/boot-loop on IDF v5.4+.
 CONFIG_BT_ENABLED=y
 CONFIG_BT_BLUEDROID_ENABLED=y
 CONFIG_BT_CLASSIC_ENABLED=n
@@ -6,8 +26,9 @@ CONFIG_BT_BLE_ENABLED=y
 CONFIG_BT_GATTS_ENABLE=y
 CONFIG_BTDM_CTRL_MODE_BLE_ONLY=y
 
-# Increase main task stack (BT init is heavyweight)
+# ── Stack ─────────────────────────────────────────────────────────────────────
+# BT initialisation is heavyweight — default stack is too small.
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
-# Log level
+# ── Logging ───────────────────────────────────────────────────────────────────
 CONFIG_LOG_DEFAULT_LEVEL_INFO=y
