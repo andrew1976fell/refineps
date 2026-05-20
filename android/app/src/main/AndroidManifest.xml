@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    AndroidManifest.xml — app entry point, permissions, and feature declarations
+
+    BLE permission strategy (Android changed this in API 31):
+      API <= 30: BLUETOOTH + BLUETOOTH_ADMIN + ACCESS_FINE_LOCATION
+                 (location was required for BLE scanning on older Android)
+      API >= 31: BLUETOOTH_SCAN (neverForLocation) + BLUETOOTH_CONNECT
+                 (location no longer required if neverForLocation is set)
+    Both sets are runtime-checked in MainActivity.getRequiredPermissions().
+
+    android.hardware.bluetooth_le is marked required=true — the app will
+    not appear in the Play Store on devices without BLE hardware.
+
+    Related:
+      MainActivity.kt     — runtime permission checking and scan trigger
+      android/notes/ble.md — BLE permission notes and Android version caveats
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 

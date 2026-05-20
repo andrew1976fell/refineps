@@ -1,3 +1,29 @@
+/*
+ * MainScreen.kt — root Compose screen and all UI components
+ *
+ * Single-screen layout (no navigation). Components:
+ *   StatusChip       — connection state badge in the top bar
+ *   ConnectionButton — "Scan & Connect" / spinner+Cancel / "Disconnect"
+ *                      depending on ConnectionState
+ *   ChannelControls  — CH1 duty_a (Power %) and duty_b (Pulse low %) sliders
+ *                      plus Send button; disabled when not CONNECTED
+ *   TelemetryCard    — displays last received telemetry JSON (pretty-printed)
+ *   LogWindow        — scrolling log of last 20 BLE events, auto-scrolls to bottom
+ *
+ * Current limitations:
+ *   - Controls CH1 only — multi-channel UI not yet built
+ *   - No alloff button
+ *   - No freq_carrier or freq_switch controls
+ *   - No profile UI
+ *   - TelemetryCard shows raw JSON; no parsed voltage/current display
+ *
+ * UI is stateless — reads UiState from MainViewModel via StateFlow,
+ * fires callbacks for user actions. No BLE logic here.
+ *
+ * Related:
+ *   MainViewModel.kt            — UiState source and callback handlers
+ *   android/notes/ui.md         — screen structure and what still needs building
+ */
 package com.andrewscrap.refineps.ui
 
 import androidx.compose.foundation.background

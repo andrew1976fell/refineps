@@ -1,3 +1,28 @@
+/*
+ * MainViewModel.kt — UI state and BLE command logic
+ *
+ * Owns BleManager and exposes a single UiState StateFlow to the UI.
+ * Uses AndroidViewModel (not ViewModel) because BleManager needs an
+ * Application context that outlives the Activity.
+ *
+ * UiState fields:
+ *   connectionState  — DISCONNECTED / SCANNING / CONNECTING / CONNECTED
+ *   deviceName       — name of the connected device ("RefinePS")
+ *   dutyA            — high-phase duty cycle (0–100%), bound to slider
+ *   dutyB            — low-phase duty cycle (0–100%), bound to slider
+ *   lastTelemetry    — most recent telemetry JSON (pretty-printed)
+ *   logLines         — last 20 log messages (auto-truncated)
+ *
+ * Current limitations:
+ *   - sendCommand is hardcoded to CH1 (ch=1) — multi-channel not yet wired
+ *   - sendStatusCommand exists but is not called from the UI
+ *   - freq_carrier and freq_switch are not exposed — firmware defaults apply
+ *
+ * Related:
+ *   ble/BleManager.kt           — BLE scan, connect, send, receive
+ *   ui/MainScreen.kt            — consumes UiState, fires callbacks
+ *   firmware/refine_schema_v1.1.md — full command/response protocol
+ */
 package com.andrewscrap.refineps
 
 import android.app.Application

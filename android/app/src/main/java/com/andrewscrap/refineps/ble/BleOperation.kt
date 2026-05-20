@@ -1,3 +1,16 @@
+/*
+ * BleOperation.kt — sealed class for the BleManager operation queue
+ *
+ * Each subclass represents one GATT operation. BleManager enqueues these
+ * and executes them one at a time — the Android GATT stack requires
+ * serialization or operations are silently dropped.
+ *
+ * WriteCharacteristic overrides equals/hashCode because it holds a ByteArray,
+ * which uses reference equality by default in Kotlin/JVM — without the
+ * override, two identical write operations would compare as unequal.
+ *
+ * Related: ble/BleManager.kt
+ */
 package com.andrewscrap.refineps.ble
 
 import android.bluetooth.BluetoothDevice

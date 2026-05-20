@@ -1,3 +1,38 @@
+/*
+ * BleManager.kt — BLE scan, connect, send, and receive
+ *
+ * Scans for a device named "RefinePS", connects, and manages the full
+ * GATT lifecycle. All GATT operations are serialized through an operation
+ * queue — the Android GATT stack is not thread-safe and will silently drop
+ * concurrent calls. Each operation calls completeOperation() when done,
+ * which triggers the next item in the queue.
+ *
+ * Connection sequence (via operation queue):
+ *   Connect → DiscoverServices → RequestMtu(512) → EnableNotifications → CONNECTED
+ *
+ * Sending: sendCommand() appends "\n", chunks into (MTU-3)-byte pieces,
+ *   enqueues one WriteCharacteristic per chunk.
+ *
+ * Receiving: handleNotification() appends to receiveBuffer and emits a
+ *   BleEvent.Telemetry for each newline-terminated JSON message. The firmware
+ *   appends "\n" to every response, so each response arrives as one event.
+ *
+ * API compatibility:
+ *   onCharacteristicChanged has two overrides — deprecated (API < 33) and
+ *   current (API >= 33). Both delegate to handleNotification(). The
+ *   @SuppressLint("MissingPermission") annotation is safe here because
+ *   MainActivity checks permissions before any BLE call.
+ *
+ * UUIDs — must match firmware constants in bt_serial.c:
+ *   Service  0x00FF   Write char 0xFF01   Notify char 0xFF02
+ *
+ * Related:
+ *   ble/BleOperation.kt         — operation queue sealed class
+ *   MainViewModel.kt            — consumes connectionState, deviceName, events
+ *   android/notes/ble.md        — BLE implementation notes and known issues
+ *   firmware/CLAUDE.md          — firmware-side UUID definitions
+ *   firmware/refine_schema_v1.1.md — full protocol reference
+ */
 package com.andrewscrap.refineps.ble
 
 import android.annotation.SuppressLint

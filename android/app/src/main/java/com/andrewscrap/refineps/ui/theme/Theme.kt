@@ -1,3 +1,13 @@
+/*
+ * Theme.kt — Material3 theme for the RefinePS app
+ *
+ * Uses dynamic color (Material You) on API 31+ — the system wallpaper
+ * generates the color scheme automatically. Falls back to a static
+ * blue/teal palette on older devices. Dark mode follows the system setting.
+ *
+ * To change the static palette, edit DarkColorScheme and LightColorScheme.
+ * To disable dynamic color entirely, set dynamicColor = false in RefinePSTheme.
+ */
 package com.andrewscrap.refineps.ui.theme
 
 import android.os.Build

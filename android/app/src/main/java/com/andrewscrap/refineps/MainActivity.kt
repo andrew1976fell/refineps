@@ -1,3 +1,22 @@
+/*
+ * MainActivity.kt — single-activity entry point
+ *
+ * Owns the Compose content tree and BLE permission handling.
+ * All BLE and business logic lives in MainViewModel — this file only:
+ *   1. Checks / requests BLE permissions before starting a scan
+ *   2. Sets up the Compose surface and passes callbacks to MainScreen
+ *
+ * Permission split:
+ *   API <= 30: BLUETOOTH, BLUETOOTH_ADMIN, ACCESS_FINE_LOCATION (legacy)
+ *   API >= 31: BLUETOOTH_SCAN, BLUETOOTH_CONNECT (no location needed)
+ *   Both sets are also declared in AndroidManifest.xml.
+ *
+ * Related:
+ *   MainViewModel.kt            — BLE state and command logic
+ *   ui/MainScreen.kt            — Compose UI
+ *   AndroidManifest.xml         — permission declarations and feature requirements
+ *   android/notes/ble.md        — BLE permission notes and Android version caveats
+ */
 package com.andrewscrap.refineps
 
 import android.Manifest
