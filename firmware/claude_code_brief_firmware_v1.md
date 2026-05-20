@@ -1,5 +1,32 @@
 # Claude Code Brief — Refine PSU Firmware v1
 
+**Historical document — describes original intent, not current implementation.**  
+For current state see: [firmware/CLAUDE.md](CLAUDE.md) | [firmware/refine_schema_v1.1.md](refine_schema_v1.1.md) | [firmware/notes/source-map.md](notes/source-map.md)
+
+> **Key deltas from this brief to current firmware:**
+> - Transport changed from **Bluetooth Classic SPP** to **BLE** (Classic BT disabled in sdkconfig)
+> - PWM resolution changed from **10-bit (0–1023)** to **8-bit (0–255)** — 10-bit at 100 kHz crashes the ESP32 LEDC peripheral (see CLAUDE.md bug #2)
+> - BLE fragmentation handling added — commands arrive in ~20-byte chunks, not newline-delimited lines (see CLAUDE.md bug #3)
+
+## Contents
+
+- [Task](#task)
+- [Environment](#environment)
+- [Hardware](#hardware)
+- [Dual-Pulse PWM Architecture](#dual-pulse-pwm-architecture)
+- [Communications](#communications)
+- [Schema — Commands to implement](#schema--commands-to-implement)
+- [Schema — Responses to send](#schema--responses-to-send)
+- [Schema — Telemetry to send](#schema--telemetry-to-send)
+- [Error handling rules](#error-handling-rules)
+- [Status LED behaviour](#status-led-behaviour)
+- [Code structure](#code-structure)
+- [What to leave out](#what-to-leave-out)
+- [Testing](#testing)
+- [Notes for Claude Code](#notes-for-claude-code)
+
+---
+
 ## Task
 
 Write ESP-IDF firmware for an ESP32 that implements the refine project
