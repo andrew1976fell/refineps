@@ -1,3 +1,15 @@
+/*
+ * pwm.h — public API and shared types for PWM channel control
+ *
+ * channel_state_t holds both the protocol-facing values (duty_a/b as percent)
+ * and the ISR-facing pre-computed LEDC counts (ledc_duty_a/b). The volatile
+ * ISR fields must not be reordered — the switch_timer_cb ISR reads them
+ * without holding the spinlock after the duty values are pre-computed.
+ *
+ * ch_idx arguments are 0-based (0–2); protocol "ch" field is 1-based (1–3).
+ *
+ * Related: firmware/main/pwm.c
+ */
 #pragma once
 
 #include <stdint.h>

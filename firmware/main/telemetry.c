@@ -1,3 +1,21 @@
+/*
+ * telemetry.c — periodic sensor telemetry over BLE
+ *
+ * Starts a 1 Hz esp_timer that sends a JSON telemetry message for each
+ * channel where running == true (duty_a > 0 || duty_b > 0). Only sends
+ * while a BLE client is connected.
+ *
+ * Current state: cell_v and cell_a are dummy 0.0 constants.
+ * Real ADC sensing is a future task — replace the hardcoded values in
+ * send_channel_telem with actual esp_adc_cal reads when the ADC is wired.
+ *
+ * Related:
+ *   firmware/main/telemetry.h       — public init API
+ *   firmware/main/bt_serial.h       — bt_serial_is_connected, bt_serial_write_json
+ *   firmware/main/pwm.h             — pwm_get_state, channel_state_t
+ *   firmware/refine_schema_v1.1.md  — telemetry message format
+ *   firmware/notes/hardware.md      — ADC wiring status and next steps
+ */
 #include "telemetry.h"
 #include "bt_serial.h"
 #include "pwm.h"

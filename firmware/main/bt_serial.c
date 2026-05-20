@@ -1,3 +1,27 @@
+/*
+ * bt_serial.c — BLE GATT server: advertising, connection, send/receive
+ *
+ * Advertises as "RefinePS". Exposes two characteristics:
+ *   RX (0xFF01, WRITE)  — app writes JSON commands to this
+ *   TX (0xFF02, NOTIFY) — firmware sends JSON responses and telemetry here
+ *
+ * On write: copies the payload to a heap char*, queues it for schema_task.
+ * On send:  fragments outgoing data into MTU-sized chunks automatically.
+ *
+ * Key invariants:
+ *   - Classic BT is compiled out; do NOT call esp_bt_controller_mem_release
+ *     for any mode — causes abort() on IDF v5.4+ (see CLAUDE.md bug #1)
+ *   - MTU is requested at 517; actual negotiated value tracked in s_mtu
+ *   - Connection parameters are negotiated on connect to avoid 0x13 drops
+ *     (see CLAUDE.md bug #4)
+ *   - bt_serial_write is thread-safe via s_write_mutex
+ *
+ * Related:
+ *   firmware/main/bt_serial.h       — public API
+ *   firmware/main/schema.c          — consumes the message queue
+ *   firmware/CLAUDE.md              — BLE UUIDs, known bugs
+ *   firmware/refine_schema_v1.1.md  — full protocol reference
+ */
 #include "bt_serial.h"
 
 #include "esp_log.h"

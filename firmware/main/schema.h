@@ -1,3 +1,12 @@
+/*
+ * schema.h — public API for JSON command dispatch task
+ *
+ * Pass to xTaskCreate; pvParameters must be a QueueHandle_t that receives
+ * heap-allocated char* JSON command strings from bt_serial. This task owns
+ * and frees each message after processing.
+ *
+ * Related: firmware/main/schema.c
+ */
 #pragma once
 
 #include "freertos/FreeRTOS.h"

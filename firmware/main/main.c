@@ -1,3 +1,22 @@
+/*
+ * main.c — app_main entry point
+ *
+ * CURRENT STATE: hardware verification stub.
+ * Drives all three PWM channels at 100% and loops forever.
+ * BLE, schema, and telemetry are compiled in but NOT called from here.
+ *
+ * To run the full BLE firmware stack, app_main needs to:
+ *   1. Create the message queue
+ *   2. Call bt_serial_init(queue)
+ *   3. Launch schema_task on the queue via xTaskCreate
+ *   4. Call telemetry_init()
+ *
+ * Related:
+ *   firmware/main/bt_serial.h       — BLE GATT server init and write API
+ *   firmware/main/schema.h          — JSON command dispatch task
+ *   firmware/main/telemetry.h       — 1 Hz telemetry timer
+ *   firmware/notes/source-map.md    — role of each source file
+ */
 #include "driver/ledc.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"

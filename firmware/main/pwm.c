@@ -1,3 +1,25 @@
+/*
+ * pwm.c — ESP32 LEDC PWM output and dual-phase switching
+ *
+ * Manages three channels (GPIO 25/26/27). Each channel has two duty cycles
+ * (duty_a, duty_b) switched by a gptimer ISR at freq_switch (default 1 kHz).
+ * Setting duty_a == duty_b or freq_switch == 0 gives simple single-level PWM.
+ *
+ * Key invariants:
+ *   - Resolution is 8-bit (LEDC_TIMER_8_BIT, 0–255). Do NOT change to 10-bit —
+ *     100 kHz at 10-bit crashes ledc_timer_config (see CLAUDE.md bug #2)
+ *   - ch_idx is 0-based internally; protocol "ch" field is 1-based
+ *   - ISR (switch_timer_cb) uses IRAM_ATTR and direct register access —
+ *     must not call any flash-cached functions
+ *   - s_mux spinlock guards all fields read by both tasks and the ISR
+ *   - Known limitation: switch timer runs at a fixed 1 kHz regardless of
+ *     freq_switch value; per-channel switching rates are a future task
+ *
+ * Related:
+ *   firmware/main/pwm.h             — public API and channel_state_t struct
+ *   firmware/notes/hardware.md      — GPIO assignments and verification checklist
+ *   firmware/CLAUDE.md              — PWM bug history
+ */
 #include "pwm.h"
 
 #include "driver/ledc.h"

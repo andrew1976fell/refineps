@@ -1,3 +1,27 @@
+/*
+ * schema.c — JSON command dispatch and response formatting
+ *
+ * Runs as a FreeRTOS task (schema_task). Receives heap char* JSON strings
+ * from the bt_serial message queue, parses them with cJSON, dispatches to
+ * the appropriate handler, sends a response via bt_serial_write_json, then
+ * frees the message.
+ *
+ * Implemented commands: set, off, alloff, status
+ * Not yet implemented:  profile, run, stop, listprofiles, deleteprofile
+ *   (all return "bad command" for now — see TODOs in dispatch block)
+ *
+ * Key invariants:
+ *   - Messages missing "magic":"refine" are discarded silently — no response
+ *   - Malformed JSON is discarded silently — no response
+ *   - bt_serial_write_json() deletes the cJSON tree; do not use root after calling it
+ *   - ch in protocol is 1-based; ch_idx passed to pwm_* is 0-based
+ *
+ * Related:
+ *   firmware/main/schema.h          — task entry point declaration
+ *   firmware/refine_schema_v1.1.md  — full command/response protocol
+ *   firmware/main/bt_serial.h       — write API used for responses
+ *   firmware/main/pwm.h             — channel control called by handlers
+ */
 #include "schema.h"
 #include "bt_serial.h"
 #include "pwm.h"

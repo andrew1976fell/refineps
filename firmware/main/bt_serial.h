@@ -1,3 +1,12 @@
+/*
+ * bt_serial.h — public API for BLE GATT send/receive
+ *
+ * Call bt_serial_init() once from app_main, passing a FreeRTOS queue.
+ * Received JSON command strings are posted to that queue as heap char*;
+ * the consumer (schema_task) is responsible for freeing them.
+ *
+ * Related: firmware/main/bt_serial.c
+ */
 #pragma once
 
 #include "freertos/FreeRTOS.h"
