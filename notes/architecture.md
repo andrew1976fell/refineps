@@ -14,22 +14,26 @@
 ## BLE protocol
 
 - Device name: `RefinePS`
-- Service UUID and characteristic UUID defined in firmware — check `main/ble.c` for values
+- Service UUID: `0xFF00`
+- RX characteristic (app → ESP32): `0xFF01`
+- TX characteristic (ESP32 → app): `0xFF02`
+- Every message in both directions must include `"magic":"refine"` — firmware silently discards anything without it
 - Commands are JSON strings sent as BLE writes; responses are JSON notify events
 - Large responses are fragmented by firmware and reassembled by Android app
 
-## Key commands
+For the full command and response reference see [firmware/refine_schema_v1.1.md](/firmware/refine_schema_v1.1.md).
+
+## Key commands (summary only)
 
 | Command | Effect |
 |---------|--------|
-| `{"cmd":"status"}` | Returns channel states and telemetry |
-| `{"cmd":"set","ch":N,"duty":D}` | Set channel N to duty cycle D |
-| `{"cmd":"off","ch":N}` | Turn off channel N |
-| `{"cmd":"alloff"}` | Turn off all channels |
-| `{"cmd":"telemetry"}` | Returns cell_v and cell_a readings |
+| `{"magic":"refine","cmd":"status"}` | Returns all channel states |
+| `{"magic":"refine","cmd":"set","ch":1,"duty_a":80,"duty_b":20,"freq_carrier":100000,"freq_switch":1000}` | Set channel |
+| `{"magic":"refine","cmd":"off","ch":1}` | Turn off one channel |
+| `{"magic":"refine","cmd":"alloff"}` | Turn off all channels |
 
 ## Hardware
 
-- MCU: ESP32
-- PWM channels: GPIO 25, 26, 27 (verify with meter — not yet confirmed in hardware)
-- ADC sensing: not yet wired to real hardware (dummy 0.0 values in firmware)
+- MCU: ESP32 (2MB flash, BLE only — Classic BT disabled)
+- PWM channels: GPIO 25 (ch1), GPIO 26 (ch2), GPIO 27 (ch3) — not yet verified with meter
+- ADC sensing (cell_v, cell_a): not yet wired — firmware returns dummy 0.0
