@@ -1,5 +1,24 @@
 # RefinePS Firmware — Lessons Learned & Best Practices
 
+**Authoritative build, flash, and bug reference.** Do not duplicate this content elsewhere — update here first.  
+Related: [firmware/refine_schema_v1.1.md](refine_schema_v1.1.md) | [firmware/notes/](notes/) | [notes/](../notes/)
+
+## Contents
+
+- [Hardware / Environment](#hardware--environment)
+- [Working Flash Command](#working-flash-command)
+- [Build Rules](#build-rules)
+- [Known Bugs Fixed — Do Not Reintroduce](#known-bugs-fixed--do-not-reintroduce)
+  - [1. esp_bt_controller_mem_release wrong mode](#1-esp_bt_controller_mem_release-wrong-mode-critical)
+  - [2. PWM crash — LEDC resolution vs frequency](#2-pwm-crash--ledc-resolution-vs-frequency-critical)
+  - [3. BLE JSON fragmentation](#3-ble-json-fragmentation)
+  - [4. BLE connection drops](#4-ble-connection-drops-rsn-0x13)
+- [Debugging Boot Loops](#debugging-boot-loops)
+- [BLE Setup](#ble-setup)
+- [Serial Monitor](#serial-monitor-read-only-no-idf.py-monitor)
+
+---
+
 ## Hardware / Environment
 
 - **ESP32** with 2MB flash, BLE only (Classic BT disabled)
