@@ -1,5 +1,36 @@
 # Refine Project — Communications Schema v1.1
 
+**Authoritative BLE protocol reference.** Do not duplicate this content elsewhere — update here first.  
+Related: [firmware/CLAUDE.md](CLAUDE.md) | [firmware/notes/](notes/) | [notes/architecture.md](/notes/architecture.md)
+
+## Contents
+
+- [Changelog](#changelog)
+- [Principles](#principles)
+- [Dual-Pulse PWM Architecture](#dual-pulse-pwm-architecture)
+- [Magic Header](#magic-header)
+- [Commands — app → ESP32](#commands-app--esp32)
+  - [set](#set-channel-parameters)
+  - [off](#turn-off-one-channel)
+  - [alloff](#turn-off-all-channels)
+  - [status](#request-full-status)
+  - [preset](#apply-a-named-preset)
+  - [profile upload](#upload-a-profile)
+  - [run](#run-a-stored-profile)
+  - [stop](#stop-a-running-profile)
+  - [listprofiles](#list-stored-profiles)
+  - [deleteprofile](#delete-a-stored-profile)
+- [Responses — ESP32 → app](#responses-esp32--app)
+- [Telemetry — ESP32 → app unprompted](#telemetry-esp32--app-unprompted)
+- [Sensor Bus](#sensor-bus)
+- [Profile Step Structure](#profile-step-structure)
+- [Error Reference](#error-reference)
+- [GPIO Assignments](#gpio-assignments)
+- [PWM Implementation Notes](#pwm-implementation-notes)
+- [Version](#version)
+
+---
+
 ## Changelog
 - v1.0 April 2026 — initial schema, PSU phase
 - v1.1 April 2026 — added dual-pulse PWM architecture, carrier and switch frequency as control parameters, updated profile step structure, updated set command
