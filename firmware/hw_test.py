@@ -1,3 +1,36 @@
+#!/usr/bin/env python3
+"""
+hw_test.py — RefinePS hardware verification test
+
+Steps through a full PWM test sequence on all three channels (GPIO 25, 26, 27),
+pausing 8 seconds at each step so you can read a meter or scope on the GPIO pin.
+
+Usage:
+  pip install bleak          # one-time install
+  python3 hw_test.py
+
+Requirements:
+  - RefinePS firmware flashed and advertising over BLE
+  - bleak installed (pip install bleak)
+  - Multimeter or oscilloscope connected to GPIO 25/26/27
+
+Test sequence:
+  CH1 (GPIO 25): status → 50% → 25% → 75% → dual-pulse 80/20 → off
+  CH2 (GPIO 26): 50% steady
+  CH3 (GPIO 27): 50% steady
+  alloff → final status
+
+Expected readings (12V supply example):
+  duty 50%  → ~6.0V average
+  duty 25%  → ~3.0V average
+  duty 75%  → ~9.0V average
+  dual 80/20 → alternates ~9.6V / ~2.4V at 1kHz (scope needed to see switching)
+
+Related:
+  firmware/notes/hardware.md     — GPIO map and hardware verification checklist
+  firmware/CLAUDE.md             — BLE UUIDs and build/flash reference
+  firmware/refine_schema_v1.1.md — full command/response protocol
+"""
 import asyncio, json, time
 from bleak import BleakScanner, BleakClient
 

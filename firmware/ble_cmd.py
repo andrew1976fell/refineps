@@ -1,11 +1,27 @@
 #!/usr/bin/env python3
 """
-Send a single BLE command to RefinePS and print the response.
+ble_cmd.py — Send a single BLE command to RefinePS and print the response.
+
+Quick-fire tool for manual testing. Connects, sends one command, waits
+1.5 seconds for a response, then disconnects. All commands target CH1.
+
 Usage:
-  python3 ble_cmd.py alloff
-  python3 ble_cmd.py set 50          # CH1 steady 50%
-  python3 ble_cmd.py set 80 20       # CH1 dual-pulse 80/20 @ 1kHz
+  pip install bleak                  # one-time install
   python3 ble_cmd.py status
+  python3 ble_cmd.py alloff
+  python3 ble_cmd.py set 50          # CH1 steady 50% (duty_a=duty_b=50, no switching)
+  python3 ble_cmd.py set 80 20       # CH1 dual-pulse 80/20 @ 1kHz switch
+
+Requirements:
+  - RefinePS firmware flashed and advertising over BLE
+  - bleak installed (pip install bleak)
+
+For multi-step hardware verification with pauses use hw_test.py instead.
+
+Related:
+  firmware/hw_test.py            — full hardware test sequence
+  firmware/CLAUDE.md             — BLE UUIDs and build/flash reference
+  firmware/refine_schema_v1.1.md — full command/response protocol
 """
 import asyncio, json, sys
 from bleak import BleakScanner, BleakClient
