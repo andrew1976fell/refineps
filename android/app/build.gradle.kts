@@ -1,3 +1,34 @@
+// app/build.gradle.kts — app module build configuration and dependencies
+//
+// Key settings:
+//   minSdk 26 (Android 8.0) — minimum required for BLE connection parameter
+//     negotiation used to prevent 0x13 disconnects (see firmware/CLAUDE.md bug #4)
+//   compileSdk / targetSdk 34 — target Android 14
+//   isMinifyEnabled = false — ProGuard/R8 obfuscation disabled; enable when
+//     preparing a release build to reduce APK size
+//
+// Compose compiler compatibility:
+//   kotlinCompilerExtensionVersion "1.5.8" must match Kotlin 1.9.22
+//   If you upgrade Kotlin, check the compatibility table before changing this:
+//   https://developer.android.com/jetpack/androidx/releases/compose-kotlin
+//
+// Dependencies — what each one does:
+//   core-ktx                  Kotlin extensions for Android core APIs
+//   lifecycle-runtime-ktx     viewModelScope, coroutine lifecycle integration
+//   lifecycle-viewmodel-compose  viewModel() Compose integration for MainViewModel
+//   activity-compose          setContent{} and ComponentActivity Compose support
+//   compose-bom               Bill of Materials — pins all compose/* versions together
+//   compose ui / ui-graphics  core Compose UI rendering
+//   ui-tooling-preview         @Preview annotation support in Android Studio
+//   material3                 Material Design 3 components (used throughout MainScreen)
+//   ui-tooling (debug)        layout inspector support
+//   ui-test-manifest (debug)  test runner manifest entries
+//
+// Related:
+//   android/build.gradle.kts        — plugin version declarations
+//   android/settings.gradle.kts     — project name and module list
+//   android/notes/setup.md          — how to open and build in Android Studio
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
