@@ -1,17 +1,23 @@
-## IDF Component Manager Manifest File
+# idf_component.yml — ESP-IDF Component Manager manifest
+#
+# Declares external component dependencies (from the Espressif component
+# registry). This is separate from CMakeLists.txt REQUIRES, which declares
+# built-in IDF component dependencies.
+#
+# cJSON is the only external dependency — used in schema.c for all JSON
+# parsing and generation. The exact resolved version is pinned in
+# dependencies.lock (espressif/cjson 1.7.19~2).
+#
+# To add a new external component:
+#   username/component: ">=x.y.z"
+# then run: idf.py update-dependencies
+#
+# Related:
+#   firmware/main/CMakeLists.txt    — built-in IDF component dependencies
+#   firmware/dependencies.lock      — pinned resolved versions
+#   firmware/notes/source-map.md    — which source files use cJSON (schema.c)
+
 dependencies:
-  ## Required IDF version
   idf:
     version: '>=4.1.0'
-  # # Put list of dependencies here
-  # # For components maintained by Espressif:
-  # component: "~1.0.0"
-  # # For 3rd party components:
-  # username/component: ">=1.0.0,<2.0.0"
-  # username2/component2:
-  #   version: "~1.0.0"
-  #   # For transient dependencies `public` flag can be set.
-  #   # `public` flag doesn't have an effect dependencies of the `main` component.
-  #   # All dependencies of `main` are public by default.
-  #   public: true
   espressif/cjson: '*'
