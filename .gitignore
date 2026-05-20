@@ -1,3 +1,20 @@
+# .gitignore — combined ignore rules for firmware/ and android/
+#
+# Both components share this single root-level file.
+# Add firmware rules under the ESP-IDF section, Android rules under the Android section.
+#
+# Intentionally committed (not ignored) — may look surprising:
+#   firmware/sdkconfig          pinned build config for reproducible builds across machines
+#   firmware/dependencies.lock  pinned cJSON component version
+#
+# Security — never remove these lines:
+#   *.keystore / *.jks          Android signing keys — must never be committed
+#   google-services.json        Firebase credentials — not used yet but pre-emptively ignored
+#   local.properties            Android Studio local SDK path — machine-specific, not portable
+#
+# Related:
+#   notes/repo-map.md           full map of what is and isn't in the repo
+
 # ESP-IDF / firmware
 build/
 managed_components/
