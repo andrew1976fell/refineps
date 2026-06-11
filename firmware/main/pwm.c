@@ -2,8 +2,10 @@
  * pwm.c — ESP32 LEDC PWM output and dual-phase switching
  *
  * Manages three channels (GPIO 25/26/27). Each channel has two duty cycles
- * (duty_a, duty_b) switched by a gptimer ISR at freq_switch (default 1 kHz).
- * Setting duty_a == duty_b or freq_switch == 0 gives simple single-level PWM.
+ * (duty_a, duty_b) switched by a gptimer ISR at freq_switch. On the pre-prototype
+ * rig the defaults are a low carrier with freq_switch = 0 (single-level PWM) for
+ * reliable FET switching — see the DEFAULT_FREQ_* note below. Setting
+ * duty_a == duty_b or freq_switch == 0 gives simple single-level PWM.
  *
  * Key invariants:
  *   - Resolution is 8-bit (LEDC_TIMER_8_BIT, 0–255). Do NOT change to 10-bit —
@@ -30,6 +32,20 @@
 #include "freertos/portmacro.h"
 
 #define TAG "REFINE"
+
+/*
+ * Default carrier / switch frequency for the pre-prototype test circuit.
+ *
+ * 100 kHz is the eventual design target — at that rate the cell's double-layer
+ * capacitance integrates the pulses into an average voltage with no output
+ * filter (see refine_schema_v1.1.md). But 100 kHz edges ring badly through
+ * breadboard parasitics, so the test rig runs a much slower, single-level PWM
+ * to prove Vout-follows-duty reliably first. Raise DEFAULT_FREQ_CARRIER back
+ * toward 100000 (and re-enable dual-phase via freq_switch) once the PCB layout
+ * tames the parasitics — work from known-good to known-good.
+ */
+#define DEFAULT_FREQ_CARRIER 1000   // Hz — was 100000 (too fast for breadboard)
+#define DEFAULT_FREQ_SWITCH  0      // Hz — 0 = single-level PWM, dual-phase deferred
 
 // GPIO per channel (0-based index)
 static const int CH_GPIO[NUM_CHANNELS] = {25, 26, 27};
@@ -140,14 +156,14 @@ void pwm_init(void) {
         s_ch[i].ch           = i + 1;
         s_ch[i].duty_a       = 0;
         s_ch[i].duty_b       = 0;
-        s_ch[i].freq_carrier = 100000;
-        s_ch[i].freq_switch  = 1000;
+        s_ch[i].freq_carrier = DEFAULT_FREQ_CARRIER;
+        s_ch[i].freq_switch  = DEFAULT_FREQ_SWITCH;
         s_ch[i].running      = false;
         s_ch[i].ledc_duty_a  = 0;
         s_ch[i].ledc_duty_b  = 0;
         s_ch[i].phase        = false;
 
-        configure_ledc_timer(i, 100000);
+        configure_ledc_timer(i, DEFAULT_FREQ_CARRIER);
         configure_ledc_channel(i);
     }
 
@@ -173,7 +189,8 @@ void pwm_init(void) {
     ESP_ERROR_CHECK(gptimer_enable(s_switch_timer));
     ESP_ERROR_CHECK(gptimer_start(s_switch_timer));
 
-    ESP_LOGI(TAG, "PWM init: 3 channels, 100 kHz carrier, 8-bit resolution, 1 kHz switch timer");
+    ESP_LOGI(TAG, "PWM init: 3 channels, %d Hz carrier, 8-bit resolution, switch=%d Hz (0=single-level)",
+             DEFAULT_FREQ_CARRIER, DEFAULT_FREQ_SWITCH);
 }
 
 void pwm_set_channel(int ch_idx, int duty_a, int duty_b,
