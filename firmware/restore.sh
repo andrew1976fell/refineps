@@ -9,10 +9,16 @@
 #   bash firmware/restore.sh
 #
 # Prerequisites:
-#   - Backup files must exist at ~/Downloads/refineps_backup/:
+#   - Backup files must exist at $REFINE_BACKUP_DIR (default
+#     $HOME/Downloads/refineps_backup/):
 #       bootloader.bin, partition-table.bin, refine_firmware.bin
-#   - ESP32 connected via USB-UART adapter on /dev/ttyUSB0
-#   - If port is wrong, check: ls /dev/ttyUSB* and edit --port below
+#   - ESP32 connected via USB-UART adapter (default /dev/ttyUSB0)
+#   - If port is wrong, check: ls /dev/ttyUSB* and set ESPPORT (see below)
+#
+# Port/baud come from the standard esptool env vars ESPPORT/ESPBAUD, falling
+# back to /dev/ttyUSB0 at 115200. The backup directory comes from
+# REFINE_BACKUP_DIR. Override without editing this file, e.g.:
+#   ESPPORT=/dev/ttyUSB1 REFINE_BACKUP_DIR=~/backups bash firmware/restore.sh
 #
 # To flash the current build output instead, use flash.sh.
 #
@@ -20,8 +26,9 @@
 #   firmware/CLAUDE.md              — authoritative flash reference and build rules
 #   firmware/flash.sh               — flash current build output
 
-python3 -m esptool --chip esp32 --port /dev/ttyUSB0 --baud 115200 --no-stub \
+BACKUP_DIR="${REFINE_BACKUP_DIR:-$HOME/Downloads/refineps_backup}"
+python3 -m esptool --chip esp32 --port "${ESPPORT:-/dev/ttyUSB0}" --baud "${ESPBAUD:-115200}" --no-stub \
   write-flash --flash-mode dio --flash-size 2MB --flash-freq 40m \
-  0x1000  /home/andrewandhelena/Downloads/refineps_backup/bootloader.bin \
-  0x8000  /home/andrewandhelena/Downloads/refineps_backup/partition-table.bin \
-  0x10000 /home/andrewandhelena/Downloads/refineps_backup/refine_firmware.bin
+  0x1000  "$BACKUP_DIR/bootloader.bin" \
+  0x8000  "$BACKUP_DIR/partition-table.bin" \
+  0x10000 "$BACKUP_DIR/refine_firmware.bin"

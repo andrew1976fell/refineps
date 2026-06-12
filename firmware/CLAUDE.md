@@ -31,10 +31,23 @@ Related: [firmware/refine_schema_v1.1.md](refine_schema_v1.1.md) | [firmware/not
 
 ## Working Flash Command
 
-Always use this format — `--no-stub` at 115200 baud:
+Prefer the helper script — it resolves the build dir relative to itself, so it
+works from any checkout path:
 ```
-cd /home/andrewandhelena/Downloads/refine-firmware/build && \
-python3 -m esptool --chip esp32 --port /dev/ttyUSB0 --baud 115200 --no-stub \
+bash firmware/flash.sh
+```
+
+It always flashes with `--no-stub` at 115200 baud. Port and baud come from the
+standard esptool env vars `ESPPORT`/`ESPBAUD` (default `/dev/ttyUSB0`, 115200);
+override per-run without editing the script:
+```
+ESPPORT=/dev/ttyUSB1 bash firmware/flash.sh
+```
+
+Equivalent raw command (run from the firmware project root):
+```
+cd "$(git rev-parse --show-toplevel)/firmware/build" && \
+python3 -m esptool --chip esp32 --port "${ESPPORT:-/dev/ttyUSB0}" --baud "${ESPBAUD:-115200}" --no-stub \
   write-flash --flash-mode dio --flash-size 2MB --flash-freq 40m \
   0x1000  bootloader/bootloader.bin \
   0x8000  partition_table/partition-table.bin \

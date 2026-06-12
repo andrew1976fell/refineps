@@ -10,9 +10,16 @@
 #
 # Prerequisites:
 #   - Build must be up to date: bash -c "source ~/esp-idf-v5.5/export.sh && idf.py build"
-#   - ESP32 connected via USB-UART adapter on /dev/ttyUSB0
-#   - If port is wrong, check: ls /dev/ttyUSB* and edit --port below
+#   - ESP32 connected via USB-UART adapter (default /dev/ttyUSB0)
+#   - If port is wrong, check: ls /dev/ttyUSB* and set ESPPORT (see below)
 #   - User in dialout group: sudo usermod -aG dialout $USER (then log out/in)
+#
+# Port/baud come from the standard esptool env vars ESPPORT/ESPBAUD, falling
+# back to /dev/ttyUSB0 at 115200. Override without editing this file, e.g.:
+#   ESPPORT=/dev/ttyUSB1 bash firmware/flash.sh
+#
+# The build directory is resolved relative to this script, so the repo can live
+# at any path on any machine.
 #
 # To restore a known-good firmware instead of the current build, use restore.sh.
 #
@@ -21,8 +28,9 @@
 #   firmware/notes/setup.md         — first-time machine setup
 #   firmware/restore.sh             — flash from backup instead of current build
 
-cd /home/andrewandhelena/Downloads/refine-firmware/build && \
-python3 -m esptool --chip esp32 --port /dev/ttyUSB0 --baud 115200 --no-stub \
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/build" && \
+python3 -m esptool --chip esp32 --port "${ESPPORT:-/dev/ttyUSB0}" --baud "${ESPBAUD:-115200}" --no-stub \
   write-flash --flash-mode dio --flash-size 2MB --flash-freq 40m \
   0x1000  bootloader/bootloader.bin \
   0x8000  partition_table/partition-table.bin \
