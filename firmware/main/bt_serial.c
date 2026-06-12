@@ -69,6 +69,14 @@ static uint16_t         s_mtu            = 23;
 static QueueHandle_t     s_msg_queue   = NULL;
 static SemaphoreHandle_t s_write_mutex = NULL;
 
+// Reassembly buffer for incoming RX writes. A single JSON command may span
+// several BLE write events (each MTU-limited to ~20 bytes), so bytes are
+// accumulated here and only dispatched once the terminating '\n' arrives.
+// Senders append '\n' to every command (see ble_cmd.py, BleManager.kt).
+static char    s_rx_buf[LINE_BUF_SIZE];
+static size_t  s_rx_len     = 0;
+static bool    s_rx_discard = false;   // current line overflowed; resync at next '\n'
+
 
 // ---------------------------------------------------------------------------
 // Attribute table
@@ -180,6 +188,50 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event,
 }
 
 // ---------------------------------------------------------------------------
+// RX reassembly
+// ---------------------------------------------------------------------------
+
+// Hand a fully-assembled command line (NUL-terminated copy of s_rx_buf) to the
+// schema task, then reset the buffer. Empty lines are ignored.
+static void rx_dispatch_line(void) {
+    if (s_rx_len == 0) return;
+    char *msg = malloc(s_rx_len + 1);
+    if (msg) {
+        memcpy(msg, s_rx_buf, s_rx_len);
+        msg[s_rx_len] = '\0';
+        if (xQueueSend(s_msg_queue, &msg, 0) != pdTRUE) {
+            ESP_LOGW(TAG, "msg_queue full — dropping command");
+            free(msg);
+        }
+    }
+    s_rx_len = 0;
+}
+
+// Feed one BLE write event's payload through the reassembly buffer, dispatching
+// a command for each '\n' encountered.
+static void rx_feed(const uint8_t *data, int len) {
+    for (int i = 0; i < len; i++) {
+        char c = (char)data[i];
+        if (c == '\n') {
+            if (s_rx_discard) {
+                s_rx_discard = false;   // oversized line ended — resync
+                s_rx_len     = 0;
+            } else {
+                rx_dispatch_line();
+            }
+        } else if (s_rx_discard) {
+            continue;                   // still skipping the oversized line
+        } else if (s_rx_len < LINE_BUF_SIZE - 1) {
+            s_rx_buf[s_rx_len++] = c;
+        } else {
+            ESP_LOGW(TAG, "RX line overflow — discarding until next newline");
+            s_rx_discard = true;
+            s_rx_len     = 0;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // GATTS callback
 // ---------------------------------------------------------------------------
 
@@ -245,6 +297,8 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
         s_notify_enabled = false;
         s_conn_id        = 0xFFFF;
         s_mtu            = 23;
+        s_rx_len         = 0;       // drop any partial line from this connection
+        s_rx_discard     = false;
         esp_ble_gap_start_advertising(&s_adv_params);
         break;
 
@@ -260,16 +314,8 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
             int len = param->write.len;
             ESP_LOGI(TAG, "RX write: %d bytes", len);
             ESP_LOG_BUFFER_HEX(TAG, param->write.value, (uint16_t)len);
-            if (len > 0 && len < LINE_BUF_SIZE) {
-                char *msg = malloc((size_t)(len + 1));
-                if (msg) {
-                    memcpy(msg, param->write.value, (size_t)len);
-                    msg[len] = '\0';
-                    if (xQueueSend(s_msg_queue, &msg, 0) != pdTRUE) {
-                        ESP_LOGW(TAG, "msg_queue full — dropping command");
-                        free(msg);
-                    }
-                }
+            if (len > 0) {
+                rx_feed(param->write.value, len);
             }
         } else if (handle == s_handle_table[IDX_CHAR_TX_CCCD]) {
             if (param->write.len == 2) {
