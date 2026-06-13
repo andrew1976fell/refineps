@@ -36,11 +36,15 @@ current ADC.
 
 ## Outstanding tasks
 
-- **Make the build path-independent** — the flash/restore scripts and
-  firmware/CLAUDE.md are already resolved relative to their own location
-  (commit `416e3f9`); confirm the build itself has no hard-coded checkout paths.
-- **Commit and push** — current branch `firmware/path-independent-flash-scripts`
-  has no upstream and is not yet pushed. Commit this CLAUDE.md and push the branch.
+_None currently open._ Recently completed:
+
+- ~~**Make the build path-independent**~~ — done. Flash/restore scripts and
+  firmware/CLAUDE.md resolve relative to their own location (commit `416e3f9`),
+  and the build was verified to have no hard-coded checkout paths: `build/` is
+  untracked (its absolute CMake paths never enter the repo) and the only env
+  reference is the home-relative `~/esp-idf-v5.5/`.
+- ~~**Commit and push**~~ — done. Branch `firmware/path-independent-flash-scripts`
+  is pushed and tracking `origin`.
 
 ## Flash command (Lubuntu)
 
