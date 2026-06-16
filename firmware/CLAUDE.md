@@ -1,5 +1,10 @@
 # RefinePS Firmware — Lessons Learned & Best Practices
 
+> **CRITICAL — branch policy:** This repo uses ONLY the `main` branch. Never push
+> to or create `master`. If `master` exists, that's an error — delete it and ensure
+> all work is on `main`. Every session must verify this **before doing anything else**:
+> `git branch -a` should show no `master` (local or `remotes/origin/master`).
+
 **Authoritative build, flash, and bug reference.** Do not duplicate this content elsewhere — update here first.  
 Related: [firmware/refine_schema_v1.1.md](refine_schema_v1.1.md) | [firmware/notes/](notes/) | [notes/](../notes/)
 
