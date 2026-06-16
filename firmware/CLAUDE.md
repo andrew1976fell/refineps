@@ -79,10 +79,13 @@ python3 -m esptool --chip esp32 --port /dev/ttyUSB0 --baud 115200 --no-stub \
 ### 3. BLE JSON fragmentation
 - **Symptom:** Commands from nRF Connect arrive as separate 18-byte write events;
   each fragment was parsed individually and always failed.
-- **Fix:** `bt_serial.c` now buffers incoming write fragments and only attempts JSON parse
-  when the complete message has arrived, detected by the closing `}` character.
+- **Fix:** `bt_serial.c` reassembles incoming write fragments into a line buffer and only
+  dispatches a command when the terminating **newline (`\n`)** arrives — not by detecting a
+  closing `}`. Senders must append `\n` to every command (see `ble_cmd.py`, `BleManager.kt`).
+  A single feed may contain multiple `\n`-delimited commands; each is dispatched in turn.
+  Lines longer than `LINE_BUF_SIZE` are discarded and the buffer resyncs at the next `\n`.
 - **Rule:** BLE GATT write requests are MTU-limited (~20 bytes default). Never assume a
-  single write event = a complete message.
+  single write event = a complete message. Frame commands with a trailing `\n`.
 
 ### 4. BLE connection drops (rsn 0x13)
 - **Symptom:** Connection dropped after a few seconds with reason code 0x13
