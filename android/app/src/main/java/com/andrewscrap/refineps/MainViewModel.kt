@@ -42,6 +42,12 @@ data class UiState(
     val deviceName: String? = null,
     val dutyA: Int = 50,
     val dutyB: Int = 50,
+    // Fine mode: when on, the duty_a slider's full travel maps to a narrow
+    // window [sliderMin, sliderMax] centred on dutyA for 10x resolution.
+    // In coarse mode the window is the full 0..100 range.
+    val fineMode: Boolean = false,
+    val sliderMin: Int = 0,
+    val sliderMax: Int = 100,
     val lastTelemetry: String = "",
     val logLines: List<String> = emptyList()
 )
@@ -91,6 +97,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setDutyB(value: Int) {
         _uiState.update { it.copy(dutyB = value) }
+    }
+
+    /**
+     * Toggle fine mode for the duty_a slider. Enabling captures the current
+     * dutyA and centres a ±5% window on it (clamped to 0..100, so asymmetric
+     * near the ends). Disabling restores the full 0..100 range. dutyA itself
+     * is never changed here — only the slider's scale.
+     */
+    fun setFineMode(enabled: Boolean) {
+        _uiState.update { state ->
+            if (enabled) {
+                val v = state.dutyA
+                state.copy(
+                    fineMode = true,
+                    sliderMin = maxOf(0, v - 5),
+                    sliderMax = minOf(100, v + 5)
+                )
+            } else {
+                state.copy(fineMode = false, sliderMin = 0, sliderMax = 100)
+            }
+        }
     }
 
     fun sendCommand() {

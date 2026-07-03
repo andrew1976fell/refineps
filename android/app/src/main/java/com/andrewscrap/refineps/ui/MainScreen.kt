@@ -51,6 +51,7 @@ fun MainScreen(
     onDisconnectClick: () -> Unit,
     onDutyAChange: (Int) -> Unit,
     onDutyBChange: (Int) -> Unit,
+    onFineToggle: (Boolean) -> Unit,
     onSendClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -83,9 +84,13 @@ fun MainScreen(
             ChannelControls(
                 dutyA = uiState.dutyA,
                 dutyB = uiState.dutyB,
+                fineMode = uiState.fineMode,
+                sliderMin = uiState.sliderMin,
+                sliderMax = uiState.sliderMax,
                 enabled = uiState.connectionState == ConnectionState.CONNECTED,
                 onDutyAChange = onDutyAChange,
                 onDutyBChange = onDutyBChange,
+                onFineToggle = onFineToggle,
                 onSendClick = onSendClick
             )
 
@@ -164,9 +169,13 @@ private fun ConnectionButton(
 private fun ChannelControls(
     dutyA: Int,
     dutyB: Int,
+    fineMode: Boolean,
+    sliderMin: Int,
+    sliderMax: Int,
     enabled: Boolean,
     onDutyAChange: (Int) -> Unit,
     onDutyBChange: (Int) -> Unit,
+    onFineToggle: (Boolean) -> Unit,
     onSendClick: () -> Unit
 ) {
     Card(
@@ -181,19 +190,32 @@ private fun ChannelControls(
                 style = MaterialTheme.typography.titleMedium
             )
 
-            // Power % slider
+            // Power % slider — supports Fine mode (narrow window, 10x resolution)
             Column {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Power %")
-                    Text("$dutyA%")
+                    val powerLabel = if (fineMode) {
+                        "Power: $dutyA% (fine $sliderMin-$sliderMax%)"
+                    } else {
+                        "Power: $dutyA%"
+                    }
+                    Text(powerLabel)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Fine")
+                        Checkbox(
+                            checked = fineMode,
+                            onCheckedChange = onFineToggle,
+                            enabled = enabled
+                        )
+                    }
                 }
                 Slider(
-                    value = dutyA.toFloat(),
+                    value = dutyA.toFloat().coerceIn(sliderMin.toFloat(), sliderMax.toFloat()),
                     onValueChange = { onDutyAChange(it.toInt()) },
-                    valueRange = 0f..100f,
+                    valueRange = sliderMin.toFloat()..sliderMax.toFloat(),
                     enabled = enabled
                 )
             }

@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
                         onDisconnectClick = { viewModel.disconnect() },
                         onDutyAChange = { viewModel.setDutyA(it) },
                         onDutyBChange = { viewModel.setDutyB(it) },
+                        onFineToggle = { viewModel.setFineMode(it) },
                         onSendClick = { viewModel.sendCommand() }
                     )
                 }
