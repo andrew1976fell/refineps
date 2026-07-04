@@ -1,0 +1,62 @@
+// devcontainer.json — headless Android build environment for RefinePS
+//
+// Purpose: any GitHub Codespace (or local Dev Container) built from this repo
+// arrives with a working headless Android toolchain (JDK + Android SDK +
+// command-line tools) able to build the app APK via Gradle with zero manual
+// setup. Build-only: no Android Studio GUI, no emulator. APKs are downloaded
+// and sideloaded to a physical phone.
+//
+// VERSION POLICY — PINNED, DO NOT FLOAT.
+// Every version below is pinned to MATCH the project's existing build config.
+// Do not bump anything here without also updating the Gradle build files.
+//   JDK ....................... 17     (required to RUN AGP 8.x / Gradle 8.13;
+//                                       the app still targets Java 8 bytecode)
+//   Gradle wrapper ............ 8.13   (android/gradle/wrapper/gradle-wrapper.properties)
+//   Android Gradle Plugin ..... 8.13.2 (android/build.gradle.kts)
+//   Kotlin .................... 1.9.22 (android/build.gradle.kts)
+//   compileSdk / targetSdk .... 34     (android/app/build.gradle.kts)
+//   minSdk .................... 26     (android/app/build.gradle.kts)
+//   Android platform .......... android-34   (matches compileSdk)
+//   Android build-tools ....... 34.0.0       (matches compileSdk)
+//
+// To update: edit the versions here to match the new build config, then
+// rebuild the container (Command Palette -> "Dev Containers: Rebuild Container").
+{
+  "name": "RefinePS Android build (headless, JDK 17)",
+
+  // Base image: Microsoft devcontainer Java image pinned to JDK 17.
+  // (":1-17-bookworm" = feature-schema major 1, JDK 17, Debian bookworm.)
+  "image": "mcr.microsoft.com/devcontainers/java:1-17-bookworm",
+
+  "features": {
+    // Android command-line SDK tools (sdkmanager, avdmanager, adb path setup).
+    // Sets ANDROID_HOME / ANDROID_SDK_ROOT and puts the tools on PATH.
+    // The specific SDK packages we build against are installed in
+    // postCreateCommand below so their versions are explicit and pinned.
+    "ghcr.io/devcontainers/features/android-sdk:1": {
+      // cmdline-tools installer revision (this is only the bootstrap installer,
+      // not part of the built APK). Pinned for reproducibility.
+      "version": "11076708"
+    }
+  },
+
+  // Runs once after the container is created:
+  //   1. Accept all Android SDK licences non-interactively.
+  //   2. Install the exact platform + build-tools this project needs.
+  //   3. Warm up the Gradle/Maven caches by resolving app dependencies so the
+  //      first real build is fast. Dependency resolution only (no compile),
+  //      so it succeeds on a fresh container as long as network is available.
+  "postCreateCommand": "yes | sdkmanager --licenses > /dev/null && sdkmanager 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0' && cd android && ./gradlew --no-daemon :app:dependencies",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "fwcd.kotlin"
+      ]
+    }
+  },
+
+  // Codespaces default user for the Java image.
+  "remoteUser": "vscode"
+}
