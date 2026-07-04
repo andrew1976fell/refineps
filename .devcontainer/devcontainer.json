@@ -46,7 +46,7 @@
   //   3. Warm up the Gradle/Maven caches by resolving app dependencies so the
   //      first real build is fast. Dependency resolution only (no compile),
   //      so it succeeds on a fresh container as long as network is available.
-  "postCreateCommand": "yes | sdkmanager --licenses > /dev/null && sdkmanager 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0' && cd android && ./gradlew --no-daemon :app:dependencies",
+  //postCreateCommand": "yes | sdkmanager --licenses > /dev/null && sdkmanager 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0' && cd android && ./gradlew --no-daemon :app:dependencies",
 
   "customizations": {
     "vscode": {
